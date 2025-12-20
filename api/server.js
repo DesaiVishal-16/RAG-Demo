@@ -90,7 +90,10 @@ const basicAuth = (req, res, next) => {
   const user = auth[0];
   const pass = auth[1];
 
-  if (user === 'admin' && pass === 'admin4321') {
+  const envUser = process.env.ADMIN_USERNAME;
+  const envPass = process.env.ADMIN_PASSWORD;
+
+  if (user === envUser && pass === envPass) {
     next();
   } else {
     res.setHeader('WWW-Authenticate', 'Basic realm="Secure Area"');
