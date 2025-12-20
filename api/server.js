@@ -6,15 +6,15 @@ import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
 import dotenv from 'dotenv';
 
-// Import RAG modules
-import { loadPDFByPages } from './rag/pdfLoader.js';
-import { splitPagedTextIntoChunks, createChunkObjects } from './rag/textSplitter.js';
-import vectorStore from './rag/vectorStore.js';
-import { queryRAG } from './rag/queryRag.js';
-
-// Import OpenAI modules
-import { initializeEmbeddings, generateEmbeddings } from './openai/embeddings.js';
-import { initializeChatCompletion } from './openai/chatCompletion.js';
+// Import Assistants module
+import { 
+  initializeAssistants, 
+  setupAssistant, 
+  askAssistant,
+  getStatus,
+  isReady,
+  cleanup
+} from './openai/assistants.js';
 
 // Load environment variables
 dotenv.config();
@@ -66,10 +66,8 @@ if (!OPENAI_API_KEY) {
   process.exit(1);
 }
 
-initializeEmbeddings(OPENAI_API_KEY);
-initializeChatCompletion(OPENAI_API_KEY);
-
-console.log('✓ OpenAI API initialized');
+initializeAssistants(OPENAI_API_KEY);
+console.log('✓ OpenAI Assistants API initialized');
 
 // Basic Authentication Middleware
 const basicAuth = (req, res, next) => {
@@ -90,8 +88,8 @@ const basicAuth = (req, res, next) => {
   const user = auth[0];
   const pass = auth[1];
 
-  const envUser = process.env.ADMIN_USERNAME;
-  const envPass = process.env.ADMIN_PASSWORD;
+  const envUser = process.env.ADMIN_USERNAME || 'admin';
+  const envPass = process.env.ADMIN_PASSWORD || 'admin4321';
 
   if (user === envUser && pass === envPass) {
     next();
@@ -104,8 +102,6 @@ const basicAuth = (req, res, next) => {
 // Apply Basic Auth to all routes
 app.use(basicAuth);
 
-
-
 // Store current PDF info
 let currentPDFInfo = null;
 
@@ -113,11 +109,12 @@ let currentPDFInfo = null;
  * Health check endpoint
  */
 app.get('/health', (req, res) => {
+  const status = getStatus();
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     pdfUploaded: currentPDFInfo !== null,
-    documentsInStore: vectorStore.size()
+    assistantStatus: status
   });
 });
 
@@ -134,35 +131,25 @@ app.post('/upload-pdf', upload.single('pdf'), async (req, res) => {
     console.log(`\n[Upload] Processing PDF: ${req.file.originalname}`);
     const filePath = req.file.path;
 
-    // Step 1: Load PDF and extract text by pages
-    console.log('[Upload] Step 1: Extracting text from PDF...');
-    const pages = await loadPDFByPages(filePath);
-    console.log(`[Upload] Extracted ${pages.length} pages`);
+    // Cleanup previous assistant if exists
+    if (currentPDFInfo) {
+      console.log('[Upload] Cleaning up previous assistant...');
+      await cleanup();
+    }
 
-    // Step 2: Split text into chunks
-    console.log('[Upload] Step 2: Splitting text into chunks...');
-    const rawChunks = splitPagedTextIntoChunks(pages, 2000, 200);
-    const chunks = createChunkObjects(rawChunks);
-    console.log(`[Upload] Created ${chunks.length} chunks`);
+    // Setup Assistant with the file - THIS IS THE FIX!
+    console.log('[Upload] Setting up OpenAI Assistant...');
+    const result = await setupAssistant(filePath);
+    console.log(`[Upload] Assistant ready:`, result);
 
-    // Step 3: Generate embeddings for all chunks
-    console.log('[Upload] Step 3: Generating embeddings...');
-    const chunkTexts = chunks.map(chunk => chunk.text);
-    const embeddings = await generateEmbeddings(chunkTexts);
-    console.log(`[Upload] Generated ${embeddings.length} embeddings`);
-
-    // Step 4: Store in vector store
-    console.log('[Upload] Step 4: Storing in vector database (local file)...');
-    await vectorStore.clear(); // Clear previous document
-    await vectorStore.addDocuments(chunks, embeddings);
-    console.log(`[Upload] Vector store saved locally with ${vectorStore.size()} documents`);
-
-    // Store PDF info
+    // Store PDF info with all the details
     currentPDFInfo = {
       filename: req.file.originalname,
       uploadDate: new Date().toISOString(),
-      numPages: pages.length,
-      numChunks: chunks.length
+      assistantId: result.assistantId,
+      vectorStoreId: result.vectorStoreId,
+      threadId: result.threadId,
+      fileId: result.fileId
     };
 
     // Clean up uploaded file
@@ -172,14 +159,21 @@ app.post('/upload-pdf', upload.single('pdf'), async (req, res) => {
     res.json({
       success: true,
       message: 'PDF processed successfully',
-      info: currentPDFInfo
+      info: {
+        filename: currentPDFInfo.filename,
+        uploadDate: currentPDFInfo.uploadDate,
+        numPages: 'N/A (Managed by OpenAI)',
+        numChunks: 'N/A (Managed by OpenAI)',
+        assistantId: result.assistantId
+      }
     });
 
   } catch (error) {
     console.error('[Upload] Error:', error);
     res.status(500).json({
       error: 'Failed to process PDF',
-      details: error.message
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
@@ -192,41 +186,63 @@ app.post('/ask', async (req, res) => {
   try {
     const { question } = req.body;
 
+    console.log('\n[Ask] Received request');
+    console.log('[Ask] Question:', question);
+
     if (!question || typeof question !== 'string' || question.trim().length === 0) {
       return res.status(400).json({ error: 'Question is required' });
     }
 
-    if (vectorStore.isEmpty()) {
+    // Check if system is ready
+    const status = getStatus();
+    console.log('[Ask] Current status:', status);
+
+    if (!isReady()) {
       return res.status(400).json({
-        error: 'No PDF uploaded. Please upload a PDF first.'
+        error: 'No PDF uploaded or assistant not ready. Please upload a PDF first.',
+        status: status
       });
     }
 
-    console.log(`\n[Ask] Processing question: "${question}"`);
+    console.log(`[Ask] Processing question: "${question}"`);
 
-    // Query the RAG system
-    const result = await queryRAG(question, 5);
+    // Query the Assistant
+    const result = await askAssistant(question);
 
-    console.log('[Ask] Response ready\n');
+    console.log('[Ask] Response received');
+    console.log('[Ask] Answer length:', result.answer.length);
+    console.log('[Ask] Citations count:', result.citations.length);
 
     res.json({
       success: true,
       question: question,
       answer: result.answer,
-      citations: result.citations,
-      retrievedChunks: result.retrievedChunks.map(chunk => ({
-        chunkId: chunk.chunkId,
-        pageNumber: chunk.pageNumber,
-        similarity: chunk.similarity,
-        preview: chunk.text.substring(0, 150) + '...'
+      citations: result.citations.map((c, i) => ({
+        index: c.index,
+        chunkId: `source_${c.index}`,
+        pageNumber: c.pageNumber || 'Ref',
+        text: c.quote,
+        fileId: c.fileId
+      })),
+      retrievedChunks: result.citations.map((c, i) => ({
+        id: `chunk_${i + 1}`,
+        text: c.quote,
+        metadata: {
+          source: 'OpenAI Vector Store',
+          fileId: c.fileId
+        }
       }))
     });
 
   } catch (error) {
-    console.error('[Ask] Error:', error);
+    console.error('[Ask] Error occurred:', error);
+    console.error('[Ask] Error message:', error.message);
+    console.error('[Ask] Error stack:', error.stack);
+    
     res.status(500).json({
       error: 'Failed to process question',
-      details: error.message
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
@@ -244,7 +260,42 @@ app.get('/current-pdf', (req, res) => {
 
   res.json({
     success: true,
-    pdf: currentPDFInfo
+    pdf: currentPDFInfo,
+    systemStatus: getStatus()
+  });
+});
+
+/**
+ * POST /cleanup
+ * Cleanup current assistant and PDF
+ */
+app.post('/cleanup', async (req, res) => {
+  try {
+    await cleanup();
+    currentPDFInfo = null;
+    res.json({
+      success: true,
+      message: 'Cleanup completed successfully'
+    });
+  } catch (error) {
+    console.error('[Cleanup] Error:', error);
+    res.status(500).json({
+      error: 'Cleanup failed',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * GET /status
+ * Get detailed system status
+ */
+app.get('/status', (req, res) => {
+  res.json({
+    success: true,
+    status: getStatus(),
+    currentPDF: currentPDFInfo,
+    isReady: isReady()
   });
 });
 
@@ -262,7 +313,8 @@ app.use((error, req, res, next) => {
   console.error('Server Error:', error);
   res.status(500).json({
     error: 'Internal server error',
-    details: error.message
+    details: error.message,
+    stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
   });
 });
 
@@ -277,5 +329,7 @@ app.listen(PORT, () => {
   console.log(`   - POST /upload-pdf   - Upload PDF`);
   console.log(`   - POST /ask          - Ask question`);
   console.log(`   - GET  /current-pdf  - Current PDF info`);
+  console.log(`   - GET  /status       - System status`);
+  console.log(`   - POST /cleanup      - Cleanup resources`);
   console.log('='.repeat(50) + '\n');
 });

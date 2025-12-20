@@ -4,28 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RAG Demo</title>
-    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app">
         <header class="app-header">
             <div class="header-content">
                 <h1><i class="fas fa-robot header-icon"></i> RAG Demo</h1>
-                <p class="subtitle">
-                    Upload a PDF and ask questions with AI-powered answers and citations
-                </p>
+                <p class="subtitle">Upload a PDF and ask questions with AI-powered answers and citations</p>
             </div>
         </header>
 
         <main class="app-main">
             <div class="container">
                 <!-- PDF Upload Section -->
-                <div class="pdf-upload">
+                <section class="pdf-upload">
                     <h2><i class="fas fa-file-pdf icon"></i> Upload PDF Document</h2>
-                    
                     <div class="upload-container">
-                        <input type="file" id="pdf-input" accept=".pdf" class="file-input">
+                        <input type="file" id="pdf-input" accept="application/pdf" class="file-input">
                         
                         <div id="file-info" class="file-info hidden">
                             <span class="file-icon"><i class="fas fa-file-pdf"></i></span>
@@ -36,60 +33,52 @@
                         <button id="upload-btn" class="upload-btn" disabled>
                             <i class="fas fa-cloud-upload-alt icon"></i> Upload & Process
                         </button>
-                    </div>
 
-                    <div id="upload-error" class="error-message hidden"></div>
-                    
-                    <div id="upload-success" class="success-message hidden">
-                        <div class="success-header"><i class="fas fa-check-circle icon"></i> PDF Processed Successfully!</div>
-                        <div class="pdf-details" id="pdf-details"></div>
+                        <div id="upload-error" class="error-message hidden"></div>
+                        <div id="upload-success" class="success-message hidden">
+                            <i class="fas fa-check-circle icon"></i> PDF Processed Successfully!
+                            <div id="pdf-details" style="margin-top: 10px;"></div>
+                        </div>
                     </div>
-                </div>
+                </section>
 
                 <!-- Ask Question Section -->
-                <div class="ask-question">
-                    <h2><i class="fas fa-comments icon"></i> Ask Questions</h2>
-
+                <section class="ask-question">
+                    <h2><i class="fas fa-comments icon"></i> Ask a Question</h2>
                     <div class="question-input-container">
+                        <p id="ask-info" class="info-message">
+                            <i class="fas fa-info-circle icon"></i> Please upload a PDF document first to start asking questions
+                        </p>
+                        
                         <textarea 
                             id="question-input" 
                             class="question-input" 
-                            rows="3" 
-                            placeholder="Ask a question about your PDF... (Press Enter to submit)"
+                            placeholder="Ask a question about your PDF..."
                             disabled
                         ></textarea>
 
                         <button id="ask-btn" class="ask-btn" disabled>
-                            <i class="fas fa-paper-plane icon"></i> Ask
+                            <i class="fas fa-paper-plane icon"></i> Ask Question
                         </button>
+
+                        <div id="ask-error" class="error-message hidden"></div>
                     </div>
 
-                    <div id="ask-error" class="error-message hidden"></div>
-                    <div id="ask-info" class="info-message">
-                        <i class="fas fa-info-circle icon"></i> Please upload a PDF document first to start asking questions
-                    </div>
-
-                    <div id="answer-container" class="hidden">
-                        <h3>Latest Answer</h3>
-                        <div class="answer-container">
-                            <div class="answer-section">
-                                <div class="answer-text" id="answer-text"></div>
-                            </div>
-                            
-                            <div class="citations-section hidden" id="citations-section">
-                                <h4>Sources</h4>
-                                <div class="citations-list" id="citations-list"></div>
-                            </div>
+                    <!-- Answer Display -->
+                    <div id="answer-container" class="answer-container hidden">
+                        <div class="answer-text" id="answer-text"></div>
+                        
+                        <div id="citations-section" class="citations-section hidden">
+                            <h3 style="margin-bottom: 15px; font-size: 18px;">Sources & Citations</h3>
+                            <div id="citations-list"></div>
                         </div>
                     </div>
-                </div>
+                </section>
             </div>
         </main>
 
         <footer class="app-footer">
-            <p>
-                Powered by <strong>Udayam AI Labs</strong> • <strong>RAG Demo</strong>
-            </p>
+            <p>Powered by <strong>Udayam AI Labs • RAG Demo</strong></p>
         </footer>
     </div>
 

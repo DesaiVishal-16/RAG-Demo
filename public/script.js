@@ -113,7 +113,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = await response.json();
 
-            if (!response.ok) throw new Error(data.error || 'Failed to get answer');
+            if (!response.ok) {
+                if (data.details && data.details.includes('rate_limit_exceeded')) {
+                    throw new Error('OpenAI Rate Limit reached. Please wait 20-30 seconds and try again. (Free Tier limit: 3 requests per minute)');
+                }
+                throw new Error(data.error || 'Failed to get answer');
+            }
 
             displayAnswer(data);
             questionInput.value = '';
@@ -122,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             showError(askError, err.message);
         } finally {
-            setLoading(askBtn, false, 'Ask', '<i class="fas fa-paper-plane icon"></i>');
+            setLoading(askBtn, false, 'Ask Question', '<i class="fas fa-paper-plane icon"></i>');
         }
     }
 
@@ -135,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showError(element, message) {
-        element.textContent = message;
+        element.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
         element.classList.remove('hidden');
     }
 
@@ -143,8 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
         uploadSuccess.classList.remove('hidden');
         pdfDetails.innerHTML = `
             <div class="detail-item"><strong>Filename:</strong> ${info.filename}</div>
-            <div class="detail-item"><strong>Pages:</strong> ${info.numPages}</div>
-            <div class="detail-item"><strong>Chunks:</strong> ${info.numChunks}</div>
+            <div class="detail-item"><strong>Status:</strong> Assistant Ready</div>
         `;
     }
 
@@ -161,13 +165,18 @@ document.addEventListener('DOMContentLoaded', () => {
             citationsSection.classList.remove('hidden');
             citationsList.innerHTML = data.citations.map(c => `
                 <div class="citation-item">
-                    <span class="citation-badge">Chunk ${c.chunkId.replace('chunk_', '')}</span>
-                    <span style="font-size: 0.9em; color: #666;">Page ${c.pageNumber}</span>
-                    <div style="margin-top: 5px; font-style: italic; color: #555;">"${c.text}"</div>
+                    <div class="citation-header">
+                        <span class="citation-badge">Source ${c.index}</span>
+                        <span class="citation-page">Page ${c.pageNumber}</span>
+                    </div>
+                    <div class="citation-text">"${c.text}"</div>
                 </div>
             `).join('');
         } else {
             citationsSection.classList.add('hidden');
         }
+        
+        // Scroll to answer
+        answerContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 });
