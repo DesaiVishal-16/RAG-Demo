@@ -101,8 +101,7 @@ const basicAuth = (req, res, next) => {
 // Apply Basic Auth to all routes
 app.use(basicAuth);
 
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
 
 // Store current PDF info
 let currentPDFInfo = null;
@@ -246,10 +245,13 @@ app.get('/current-pdf', (req, res) => {
   });
 });
 
+// Serve static files from the public directory
+app.use(express.static(path.join(__dirname, '../public')));
+
 // The "catchall" handler: for any request that doesn't
-// match one above, send back React's index.html file.
+// match one above, send back index.html file.
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+  res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 // Error handling middleware
