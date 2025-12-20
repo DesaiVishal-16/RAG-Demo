@@ -3,7 +3,6 @@ import { FaRobot } from 'react-icons/fa';
 import { FaCircle } from "react-icons/fa6";
 import PdfUpload from './components/PdfUpload';
 import AskQuestion from './components/AskQuestion';
-import Login from './components/Login';
 import './App.css';
 
 /**
@@ -11,21 +10,10 @@ import './App.css';
  */
 function App() {
   const [pdfUploaded, setPdfUploaded] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [token, setToken] = useState(null);
-
-  const handleLogin = (authToken) => {
-    setToken(authToken);
-    setIsAuthenticated(true);
-  };
 
   const handleUploadSuccess = () => {
     setPdfUploaded(true);
   };
-
-  if (!isAuthenticated) {
-    return <Login onLogin={handleLogin} />;
-  }
 
   return (
     <div className="app">
@@ -40,8 +28,8 @@ function App() {
 
       <main className="app-main">
         <div className="container">
-          <PdfUpload onUploadSuccess={handleUploadSuccess} token={token} />
-          <AskQuestion pdfUploaded={pdfUploaded} token={token} />
+          <PdfUpload onUploadSuccess={handleUploadSuccess} />
+          <AskQuestion pdfUploaded={pdfUploaded} />
         </div>
       </main>
 

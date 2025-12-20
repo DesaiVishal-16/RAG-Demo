@@ -8,7 +8,7 @@ import './AskQuestion.css';
  * Ask Question Component
  * Handles user questions and displays answers with citations
  */
-function AskQuestion({ pdfUploaded, token }) {
+function AskQuestion({ pdfUploaded }) {
   const [question, setQuestion] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -35,7 +35,6 @@ function AskQuestion({ pdfUploaded, token }) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ question: currentQuestion }),
       });
@@ -153,7 +152,6 @@ function AskQuestion({ pdfUploaded, token }) {
 
 AskQuestion.propTypes = {
   pdfUploaded: PropTypes.bool,
-  token: PropTypes.string.isRequired,
 };
 
 export default AskQuestion;
