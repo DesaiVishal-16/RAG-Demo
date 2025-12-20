@@ -71,6 +71,42 @@ initializeChatCompletion(OPENAI_API_KEY);
 
 console.log('✓ OpenAI API initialized');
 
+// Authentication Middleware
+const AUTH_TOKEN = 'simple-demo-token-123';
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD = 'admin4321';
+
+const authenticate = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || authHeader !== `Bearer ${AUTH_TOKEN}`) {
+    return res.status(401).json({ error: 'Unauthorized: Please log in' });
+  }
+  
+  next();
+};
+
+/**
+ * POST /login
+ * Authenticate user
+ */
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  
+  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    res.json({ 
+      success: true, 
+      token: AUTH_TOKEN,
+      message: 'Login successful' 
+    });
+  } else {
+    res.status(401).json({ 
+      success: false, 
+      error: 'Invalid username or password' 
+    });
+  }
+});
+
 // Store current PDF info
 let currentPDFInfo = null;
 
@@ -90,7 +126,7 @@ app.get('/health', (req, res) => {
  * POST /upload-pdf
  * Upload and process a PDF file
  */
-app.post('/upload-pdf', upload.single('pdf'), async (req, res) => {
+app.post('/upload-pdf', authenticate, upload.single('pdf'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No PDF file uploaded' });
@@ -153,7 +189,7 @@ app.post('/upload-pdf', upload.single('pdf'), async (req, res) => {
  * POST /ask
  * Ask a question about the uploaded PDF
  */
-app.post('/ask', async (req, res) => {
+app.post('/ask', authenticate, async (req, res) => {
   try {
     const { question } = req.body;
 
@@ -200,7 +236,7 @@ app.post('/ask', async (req, res) => {
  * GET /current-pdf
  * Get information about the currently loaded PDF
  */
-app.get('/current-pdf', (req, res) => {
+app.get('/current-pdf', authenticate, (req, res) => {
   if (!currentPDFInfo) {
     return res.status(404).json({
       error: 'No PDF currently loaded'

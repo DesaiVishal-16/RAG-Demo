@@ -7,7 +7,7 @@ import './PdfUpload.css';
  * PDF Upload Component
  * Handles PDF file upload to the backend
  */
-function PdfUpload({ onUploadSuccess }) {
+function PdfUpload({ onUploadSuccess, token }) {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
@@ -44,6 +44,9 @@ function PdfUpload({ onUploadSuccess }) {
 
       const response = await fetch('http://localhost:3001/upload-pdf', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
         body: formData,
       });
 
@@ -140,6 +143,7 @@ function PdfUpload({ onUploadSuccess }) {
 
 PdfUpload.propTypes = {
   onUploadSuccess: PropTypes.func,
+  token: PropTypes.string.isRequired,
 };
 
 export default PdfUpload;
