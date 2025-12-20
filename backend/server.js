@@ -73,6 +73,12 @@ console.log('✓ OpenAI API initialized');
 
 // Basic Authentication Middleware
 const basicAuth = (req, res, next) => {
+  // Skip authentication for API endpoints
+  const publicPaths = ['/health', '/upload-pdf', '/ask', '/current-pdf'];
+  if (publicPaths.includes(req.path)) {
+    return next();
+  }
+
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
