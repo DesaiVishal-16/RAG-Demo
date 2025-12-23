@@ -184,10 +184,11 @@ app.post('/upload-pdf', upload.single('pdf'), async (req, res) => {
  */
 app.post('/ask', async (req, res) => {
   try {
-    const { question } = req.body;
+    const { question, language } = req.body;
 
     console.log('\n[Ask] Received request');
     console.log('[Ask] Question:', question);
+    console.log('[Ask] Language:', language || 'English');
 
     if (!question || typeof question !== 'string' || question.trim().length === 0) {
       return res.status(400).json({ error: 'Question is required' });
@@ -204,10 +205,10 @@ app.post('/ask', async (req, res) => {
       });
     }
 
-    console.log(`[Ask] Processing question: "${question}"`);
+    console.log(`[Ask] Processing question: "${question}" in ${language || 'English'}`);
 
     // Query the Assistant
-    const result = await askAssistant(question);
+    const result = await askAssistant(question, language);
 
     console.log('[Ask] Response received');
     console.log('[Ask] Answer length:', result.answer.length);

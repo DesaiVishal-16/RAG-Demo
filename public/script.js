@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const answerText = document.getElementById('answer-text');
     const citationsSection = document.getElementById('citations-section');
     const citationsList = document.getElementById('citations-list');
+    const languageSelect = document.getElementById('language-select');
 
     // State
     let selectedFile = null;
@@ -108,7 +109,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ question })
+                body: JSON.stringify({ 
+                    question,
+                    language: languageSelect.value 
+                })
             });
 
             const data = await response.json();
@@ -154,8 +158,83 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function enableQuestionInput() {
         questionInput.disabled = false;
+        languageSelect.disabled = false;
         askInfo.classList.add('hidden');
     }
+
+    // Translations
+    const translations = {
+        'English': {
+            'askHeader': 'Ask a Question',
+            'askPlaceholder': 'Ask a question about your PDF...',
+            'askBtn': 'Ask Question',
+            'sourcesHeader': 'Sources & Citations'
+        },
+        'Hindi': {
+            'askHeader': 'सवाल पूछें',
+            'askPlaceholder': 'अपने पीडीएफ के बारे में एक सवाल पूछें...',
+            'askBtn': 'सवाल पूछें',
+            'sourcesHeader': 'स्रोत और उद्धरण'
+        },
+        'Marathi': {
+            'askHeader': 'प्रश्न विचारा',
+            'askPlaceholder': 'तुमच्या पीडीएफ बद्दल प्रश्न विचारा...',
+            'askBtn': 'प्रश्न विचारा',
+            'sourcesHeader': 'स्रोत आणि उद्धरण'
+        },
+        'Gujarati': {
+            'askHeader': 'પ્રશ્ન પૂછો',
+            'askPlaceholder': 'તમારા પીડીએફ વિશે પ્રશ્ન પૂછો...',
+            'askBtn': 'પ્રશ્ન પૂછો',
+            'sourcesHeader': 'સ્ત્રોતો અને અવતરણો'
+        },
+        'Tamil': {
+            'askHeader': 'கேள்வி கேளுங்கள்',
+            'askPlaceholder': 'உங்கள் PDF பற்றி ஒரு கேள்வி கேளுங்கள்...',
+            'askBtn': 'கேள்வி கேளுங்கள்',
+            'sourcesHeader': 'ஆதாரங்கள் மற்றும் மேற்கோள்கள்'
+        },
+        'Telugu': {
+            'askHeader': 'ప్రశ్న అడగండి',
+            'askPlaceholder': 'మీ PDF గురించి ప్రశ్న అడగండి...',
+            'askBtn': 'ప్రశ్న అడగండి',
+            'sourcesHeader': 'మూలాలు మరియు అనులేఖనాలు'
+        },
+        'Kannada': {
+            'askHeader': 'ಪ್ರಶ್ನೆ ಕೇಳಿ',
+            'askPlaceholder': 'ನಿಮ್ಮ PDF ಬಗ್ಗೆ ಪ್ರಶ್ನೆ ಕೇಳಿ...',
+            'askBtn': 'ಪ್ರಶ್ನೆ ಕೇಳಿ',
+            'sourcesHeader': 'ಮೂಲಗಳು ಮತ್ತು ಉಲ್ಲೇಖಗಳು'
+        },
+        'Bengali': {
+            'askHeader': 'প্রশ্ন জিজ্ঞাসা করুন',
+            'askPlaceholder': 'আপনার পিডিএফ সম্পর্কে একটি প্রশ্ন জিজ্ঞাসা করুন...',
+            'askBtn': 'প্রশ্ন জিজ্ঞাসা করুন',
+            'sourcesHeader': 'উৎস এবং উদ্ধৃতি'
+        },
+        'Punjabi': {
+            'askHeader': 'ਸਵਾਲ ਪੁੱਛੋ',
+            'askPlaceholder': 'ਆਪਣੀ ਪੀਡੀਐਫ ਬਾਰੇ ਸਵਾਲ ਪੁੱਛੋ...',
+            'askBtn': 'ਸਵਾਲ ਪੁੱਛੋ',
+            'sourcesHeader': 'ਸਰੋਤ ਅਤੇ ਹਵਾਲੇ'
+        },
+        'Malayalam': {
+            'askHeader': 'ചോദ്യം ചോദിക്കുക',
+            'askPlaceholder': 'നിങ്ങളുടെ PDF-നെ കുറിച്ച് ഒരു ചോദ്യം ചോദിക്കുക...',
+            'askBtn': 'ചോദ്യം ചോദിക്കുക',
+            'sourcesHeader': 'ഉറവിടങ്ങളും ഉദ്ധരണികളും'
+        }
+    };
+
+    languageSelect.addEventListener('change', () => {
+        const lang = languageSelect.value;
+        const t = translations[lang] || translations['English'];
+        
+        document.querySelector('.ask-question h2').innerHTML = `<i class="fas fa-comments icon"></i> ${t.askHeader}`;
+        questionInput.placeholder = t.askPlaceholder;
+        askBtn.innerHTML = `<i class="fas fa-paper-plane icon"></i> ${t.askBtn}`;
+        document.querySelector('#citations-section h3').textContent = t.sourcesHeader;
+    });
 
     function displayAnswer(data) {
         answerContainer.classList.remove('hidden');
@@ -163,11 +242,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (data.citations && data.citations.length > 0) {
             citationsSection.classList.remove('hidden');
+            const lang = languageSelect.value;
+            const sourceLabel = lang === 'Hindi' ? 'स्रोत' : 
+                               lang === 'Marathi' ? 'स्रोत' :
+                               lang === 'Gujarati' ? 'સ્ત્રોત' :
+                               lang === 'Tamil' ? 'ஆதாரம்' :
+                               lang === 'Telugu' ? 'మూలం' :
+                               lang === 'Kannada' ? 'ಮೂಲ' :
+                               lang === 'Bengali' ? 'উৎস' :
+                               lang === 'Punjabi' ? 'ਸਰੋਤ' :
+                               lang === 'Malayalam' ? 'ഉറവിടം' : 'Source';
+            
+            const pageLabel = lang === 'Hindi' ? 'पृष्ठ' : 
+                             lang === 'Marathi' ? 'पृष्ठ' :
+                             lang === 'Gujarati' ? 'પૃષ્ઠ' :
+                             lang === 'Tamil' ? 'பக்கம்' :
+                             lang === 'Telugu' ? 'పేజీ' :
+                             lang === 'Kannada' ? 'ಪುಟ' :
+                             lang === 'Bengali' ? 'পৃষ্ঠা' :
+                             lang === 'Punjabi' ? 'ਪੰਨਾ' :
+                             lang === 'Malayalam' ? 'പേജ്' : 'Page';
+
             citationsList.innerHTML = data.citations.map(c => `
                 <div class="citation-item">
                     <div class="citation-header">
-                        <span class="citation-badge">Source ${c.index}</span>
-                        <span class="citation-page">Page ${c.pageNumber}</span>
+                        <span class="citation-badge">${sourceLabel} ${c.index}</span>
+                        <span class="citation-page">${pageLabel} ${c.pageNumber}</span>
                     </div>
                     <div class="citation-text">"${c.text}"</div>
                 </div>

@@ -92,9 +92,10 @@ Guidelines:
 2. Provide specific citations and quotes from the document to support your answers
 3. If the requested information is not in the document, clearly state: "I don't find this information in the provided document"
 4. Be accurate and concise
-5. When citing, use the exact text from the document
+5. When citing, use the exact text from the document for the quote, but translate your explanation into the requested language
 6. If you're uncertain, express that uncertainty
-7. For policy or course-related questions, reference specific sections when possible`,
+7. For policy or course-related questions, reference specific sections when possible
+8. IMPORTANT: If the user asks in a specific language or requests a translation, provide the entire answer in that language. Only the citation markers [1], [2] should remain in their standard format.`,
       model: "gpt-4o-mini",
       tools: [{ type: "file_search" }],
       tool_resources: {
@@ -132,9 +133,10 @@ Guidelines:
  * Ask a question to the Assistant
  * Can be called multiple times after setup
  * @param {string} question - User's question
+ * @param {string} language - Preferred response language
  * @returns {Promise<{answer: string, citations: Array<{index: number, quote: string, fileId: string}>}>}
  */
-export async function askAssistant(question) {
+export async function askAssistant(question, language = 'English') {
   if (!openai) {
     throw new Error('OpenAI not initialized. Call initializeAssistants() first.');
   }
@@ -142,9 +144,18 @@ export async function askAssistant(question) {
   if (!currentAssistantId || !currentThreadId) {
     throw new Error('Assistant not set up. Call setupAssistant() with a PDF first.');
   }
-
+ 
   if (!question || question.trim().length === 0) {
     throw new Error('Question cannot be empty');
+  }
+ 
+  // Prepare the message content with language instruction
+  let messageContent = question;
+  if (language && language !== 'English') {
+    messageContent = `Please answer the following question in ${language}. 
+    Question: ${question}
+    
+    IMPORTANT: Provide the entire response (including any explanations) in ${language}. However, keep the citation markers like [1], [2] as they are.`;
   }
 
   let retryCount = 0;
@@ -153,16 +164,19 @@ export async function askAssistant(question) {
   while (retryCount <= maxRetries) {
     try {
       // 1. Add user's question to the thread
-      console.log('[Assistant] Adding question to thread...');
+      console.log(`[Assistant] Adding question to thread (Language: ${language})...`);
       await openai.beta.threads.messages.create(currentThreadId, {
         role: "user",
-        content: question
+        content: messageContent
       });
 
       // 2. Run the assistant
-      console.log('[Assistant] Running assistant...');
+      console.log(`[Assistant] Running assistant with additional instructions for ${language}...`);
       const run = await openai.beta.threads.runs.createAndPoll(currentThreadId, {
         assistant_id: currentAssistantId,
+        additional_instructions: language !== 'English' 
+          ? `CRITICAL: You MUST provide the entire response in ${language}. Do not use English for any part of the explanation.` 
+          : undefined
       });
 
       console.log(`[Assistant] Run completed with status: ${run.status}`);
