@@ -1,4 +1,4 @@
-:root {
+/*:root {
   --primary-color: #000000;
   --secondary-color: #333333;
   --accent-color: #000000;
@@ -8,23 +8,38 @@
   --border-color: #e0e0e0;
   --success-color: #000000;
   --error-color: #000000;
+}*/
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&family=Noto+Color+Emoji&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+/* custom propierties */
+:root{
+    /* colours: */
+    --gradient: linear-gradient(45deg,rgba(130, 140, 255, 1) 0%, rgba(181, 120, 255, 1) 100%, rgba(118, 94, 255, 1) 50%);
+    --textColour: #343A40;
+    --white: #FDFDFB;
+    --violet:#6E43CE;
+    --orange: #FD8054;
+    --gray: rgba(255, 255, 255, .72);
+    /* */
+    --borderWidth: solid 1px rgba(0, 0, 0, 0.16);
+    --modalBg: rgba(255, 255, 255, 0.95);
+    --green: rgba(0, 128, 0, 0.72);
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: "Lexend", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  scrollbar-width: thin; 
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent; 
 }
 
 body {
-  margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: var(--surface-color);
-  color: var(--text-color);
+  background: var(--gray);
 }
 
 .app {
@@ -34,9 +49,9 @@ body {
 }
 
 .app-header {
-  background: var(--primary-color);
-  color: #ffffff;
-  padding: 32px 24px;
+  background: var(--gradient);
+  color: var(--textColour);
+  padding: 1rem 2rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -44,44 +59,42 @@ body {
   max-width: 1200px;
   margin: 0 auto;
 }
-
-.app-header h1 {
-  font-size: 32px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  letter-spacing: -0.5px;
-  display: flex;
-  align-items: center;
-}
-
-.header-icon {
-  margin-right: 12px;
-  font-size: 0.9em;
-}
-
-.subtitle {
-  font-size: 16px;
-  color: #cccccc;
-  font-weight: 400;
-  margin-left: 4px;
-}
+  .app-header h1 {
+    font-size: 1.82rem;
+    font-weight: 500;
+    text-transform: capitalize;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--white);
+  }
+    .header-content-icon {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+    }
+  .subtitle {
+    font-size: 1rem;
+    color: var(--gray);
+    font-weight: 400;
+  }
 
 .app-main {
   flex: 1;
-  padding: 32px 24px;
+  padding: 2rem;
 }
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
 
 .app-footer {
-  background: var(--primary-color);
-  color: #cccccc;
+  color: rgba(52, 58, 64, 0.72);
   text-align: center;
-  padding: 20px 24px;
-  font-size: 14px;
+  padding: 1rem 2rem;
+  font-size: 1rem;
   border-top: 1px solid var(--secondary-color);
 }
 
@@ -91,115 +104,114 @@ body {
 }
 
 /* PDF Upload Styles */
-.pdf-upload {
-  background: var(--background-color);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 24px;
+.pdf-upload, .ask-question {
+  color: var(--textColour);
+  padding: 1rem;
   margin-bottom: 24px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.pdf-upload h2 {
-  margin-top: 0;
-  margin-bottom: 20px;
-  color: var(--primary-color);
-  font-size: 20px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-}
-
-.upload-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-.file-input {
-  padding: 12px;
-  border: 2px dashed var(--border-color);
-  border-radius: 8px;
-  background: var(--surface-color);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: 100%;
-}
-
-.file-input:hover:not(:disabled) {
-  border-color: var(--secondary-color);
-  background: #f0f0f0;
-}
-
-.file-input:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.file-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px;
-  background: var(--surface-color);
-  border-radius: 8px;
-  font-size: 14px;
-  border: 1px solid var(--border-color);
-}
-
-.file-icon {
-  font-size: 20px;
-  display: flex;
-  align-items: center;
-}
-
-.file-name {
-  flex: 1;
-  font-weight: 500;
-  color: var(--text-color);
-}
-
-.file-size {
-  color: #666666;
-  font-size: 12px;
-}
-
-.upload-btn {
-  padding: 14px 24px;
-  background: var(--primary-color);
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 8px;
 }
+  .pdf-upload h2 {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 1.2rem;
+    font-weight: 500;
+  }
 
-.upload-btn:hover:not(:disabled) {
-  background: var(--secondary-color);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.upload-btn:disabled {
-  background: #cccccc;
-  cursor: not-allowed;
-  transform: none;
-}
+  .upload-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    font-weight: 400;
+  }
+    .file-input {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+      background: rgba(111, 67, 206, 0.16);
+      font-size: 1rem;
+      color: var(--violet);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 2rem 1rem;
+      border-radius: 6px;
+      border: 1px dotted var(--violet);
+      opacity: .8;
+    }
+      .file-input:hover:not(:disabled) {
+        opacity: 1;
+      }
+    .file-input > i{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      border-radius: 50%;
+      background: rgba(111, 67, 206, 0.24);
+    }
+    .file-input:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    .file-info {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 8px;
+    }
+      .file-icon {
+        color: var(--green);
+        font-size: 1rem;
+        font-weight: 400;
+        font-style: italic;
+      }
+      .file-name {
+        font-weight: 400;
+        font-style: italic;
+        font-size: .8rem;
+        color: var(--green);
+      }
+      .file-size {
+        color: var(--green);
+        font-size: .8rem;
+        font-style: italic;
+      }
+    .upload-btn {
+      padding: 16px 24px;
+      background: var(--gradient);
+      color: var(--white);
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+      .upload-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+      .upload-btn:disabled {
+        background: rgba(0, 0, 0, 0.1);
+        cursor: not-allowed;
+        transform: none;
+        pointer-events: none;
+      }
 
 /* Ask Question Styles */
-.ask-question {
-  background: var(--background-color);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
+
 
 .ask-question h2 {
   margin-top: 0;
