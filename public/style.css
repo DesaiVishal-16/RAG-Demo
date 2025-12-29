@@ -20,6 +20,7 @@
     --violet:#6E43CE;
     --orange: #FD8054;
     --gray: rgba(255, 255, 255, .72);
+    --red: #EF5B70;
     /* */
     --borderWidth: solid 1px rgba(0, 0, 0, 0.16);
     --modalBg: rgba(255, 255, 255, 0.95);
@@ -47,7 +48,7 @@ body {
   display: flex;
   flex-direction: column;
 }
-
+/* header */
 .app-header {
   background: var(--gradient);
   color: var(--textColour);
@@ -80,7 +81,7 @@ body {
     color: var(--gray);
     font-weight: 400;
   }
-
+/* app body */
 .app-main {
   flex: 1;
   padding: 2rem;
@@ -88,47 +89,44 @@ body {
   .container {
     max-width: 1200px;
     margin: 0 auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 2rem;
   }
-
-.app-footer {
-  color: rgba(52, 58, 64, 0.72);
-  text-align: center;
-  padding: 1rem 2rem;
-  font-size: 1rem;
-  border-top: 1px solid var(--secondary-color);
-}
-
-.app-footer strong {
-  color: #ffffff;
-  font-weight: 600;
-}
-
-/* PDF Upload Styles */
+  /* PDF Upload Styles */
 .pdf-upload, .ask-question {
   color: var(--textColour);
   padding: 1rem;
-  margin-bottom: 24px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: stretch;
   gap: 24px;
   border: 1px solid rgba(0, 0, 0, 0.16);
   border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.16);
 }
-  .pdf-upload h2 {
+.pdf-upload{
+  flex: 1;
+}
+.ask-question{
+  flex: 2;
+}
+  .component-header {
     display: flex;
     align-items: center;
     gap: 16px;
     font-size: 1.2rem;
     font-weight: 500;
   }
-
   .upload-container {
     display: flex;
     flex-direction: column;
     gap: 16px;
     font-weight: 400;
+    max-width: 400px;
   }
+    /* label */
     .file-input {
       width: 100%;
       display: flex;
@@ -143,8 +141,8 @@ body {
       transition: all 0.3s ease;
       padding: 2rem 1rem;
       border-radius: 6px;
-      border: 1px dotted var(--violet);
-      opacity: .8;
+      border: 1px dashed var(--violet);
+      opacity: .48;
     }
       .file-input:hover:not(:disabled) {
         opacity: 1;
@@ -163,9 +161,12 @@ body {
     }
     .file-info {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      justify-content: flex-start;
       gap: 8px;
+      border: solid 1px rgba(0, 0, 0, 0.16);
+      border-radius: 6px;
+      padding: 4px 8px;
     }
       .file-icon {
         color: var(--green);
@@ -181,7 +182,7 @@ body {
       }
       .file-size {
         color: var(--green);
-        font-size: .8rem;
+        font-size: .72rem;
         font-style: italic;
       }
     .upload-btn {
@@ -207,61 +208,113 @@ body {
         background: rgba(0, 0, 0, 0.1);
         cursor: not-allowed;
         transform: none;
-        pointer-events: none;
       }
 
 /* Ask Question Styles */
-
-
-.ask-question h2 {
-  margin-top: 0;
-  margin-bottom: 20px;
-  color: var(--primary-color);
-  font-size: 20px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-}
-
 .question-input-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  font-weight: 400;
 }
 
-.language-selector {
-  display: flex;
+/* language selector */
+.languageWrapper{
+  position: relative;
+  width: auto;
+  height: 100%;
+  min-height: 48px;
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 4px;
-}
-
-.language-selector label {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--secondary-color);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.language-select {
-  padding: 8px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  font-size: 14px;
-  font-family: inherit;
-  background: var(--background-color);
+  gap: 24px;
+  padding: 4px 12px; 
   cursor: pointer;
-  transition: all 0.3s ease;
-  min-width: 180px;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--textColour);
+  border: 1px solid rgba(51, 51, 51, 0.1);
+  border-radius: 6px;
+  background: var(--light-color);
+  opacity: 1;
+  user-select: none;
 }
+  .languageWrapper.open {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-color: var(--violet);
+  }
+  .language-select-trigger{
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 0;
+    cursor: pointer;
+    outline: none;
+    color: var(--textColour);
+    font-weight: 500;
+    opacity: 1;
+  }
+    .language-name{
+      font-weight: 500;
+    }
+  .language-custom-options{
+    position: absolute;
+    top: 100%; 
+    left: 0;
+    width: 100%;
+    min-width: 100%;
+    max-height: 72px; /* Limitar altura para hacer scroll */
+    overflow-y: auto;
+    background: var(--white);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0 0 6px 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1002; /* Asegurar que se muestre por encima de otros elementos */
+    display: none; /* Oculto por defecto */
+    flex-direction: column;
+    align-items: flex-start;
+  }
+    .language-custom-option{
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      width: 100%;
+      gap: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: opacity .2s ease-in, filter .2s ease-in, background .2s ease-in;
+      font-weight: 400;
+      opacity: .9;
+    }
+      .language-custom-option:hover {
+        background: rgba(111, 67, 206, 0.1);
+        opacity: 1;
+      }  
+      /* selected */
+      .language-custom-option.selected {
+        background: rgba(111, 67, 206, 0.15);
+        font-weight: 500;
+        color: var(--violet);
+      }
 
-.language-select:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
-}
+      .language-custom-option.selected::before {
+        content: '✓ ';
+        color: var(--violet);
+      }
+
+
+  .languageWrapper .wrapperIcon{
+    color: var(--textColour);
+    transition: transform .2s ease;
+  } 
+    .languageWrapper.open .wrapperIcon {
+      transform: rotate(180deg);
+    }
+  .languageWrapper.open .language-custom-options {
+    display: flex;
+  }
 
 .question-input {
   width: 100%;
@@ -338,13 +391,7 @@ body {
 }
 
 .info-message {
-  padding: 12px 16px;
-  background: #ffffff;
-  border: 1px solid #000000;
-  border-radius: 8px;
-  color: #000000;
-  font-size: 14px;
-  margin-top: 16px;
+  color: var(--red);
   display: flex;
   align-items: center;
 }
@@ -407,6 +454,24 @@ body {
   font-style: italic;
   color: #555;
 }
+
+
+
+
+
+/* footer */
+.app-footer {
+  color: rgba(52, 58, 64, 0.72);
+  text-align: center;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+}
+  .app-footer a {
+    text-decoration: none;
+    color: var(--textColour);
+    font-weight: 500;
+  }
+
 
 /* Utility */
 .hidden {

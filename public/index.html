@@ -1,110 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>RAG Demo</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
     <div class="app">
-        <header class="app-header">
-            <div class="header-content">
-                <h1> <img width="100" height="100" src="https://img.icons8.com/ios-filled/100/FFFFFF/ai-robot--v7.png" alt="ai-robot--v7"class="header-content-icon" />retrieval-augument generation Demo</h1>
-                <p class="subtitle">Upload a PDF and ask questions with AI-powered answers and citations</p>
+      <header class="app-header">
+        <div class="header-content">
+          <h1>
+            <img
+              width="100"
+              height="100"
+              src="https://img.icons8.com/ios-filled/100/FFFFFF/ai-robot--v7.png"
+              alt="ai-robot--v7"
+              class="header-content-icon"
+            />retrieval-augument generation Demo
+          </h1>
+          <p class="subtitle">
+            Upload a PDF and ask questions with AI-powered answers and citations
+          </p>
+        </div>
+      </header>
+
+      <main class="app-main">
+        <div class="container">
+          <!-- PDF Upload Section -->
+          <section class="pdf-upload">
+            <h2 class="component-header">
+              <img
+                width="96"
+                height="96"
+                src="https://img.icons8.com/fluency/96/pdf--v1.png"
+                alt="pdf--v1"
+                class="header-content-icon"
+              />
+              Upload Knowledge in PDF
+            </h2>
+            <div class="upload-container">
+              <label for="pdf-input" class="file-input">
+                <!-- icon -->
+                <i class="fa-solid fa-paperclip"></i>
+                <span>Click to upload a file</span>
+              </label>
+              <input
+                type="file"
+                id="pdf-input"
+                accept="application/pdf"
+                hidden
+              />
+
+              <div id="file-info" class="file-info hidden">
+                <div>
+                  <span id="file-name" class="file-name"></span>
+                  <span id="file-size" class="file-size"></span>
+                </div>
+                <span class="file-icon">
+                  <i class="fa-regular fa-circle-check"></i>
+                </span>
+              </div>
+
+              <button id="upload-btn" class="upload-btn" disabled>
+                <i class="fas fa-cloud-upload-alt icon"></i> Upload & Process
+              </button>
+
+              <div id="upload-error" class="error-message hidden"></div>
+              <div id="upload-success" class="success-message hidden">
+                <i class="fas fa-check-circle icon"></i> PDF Processed
+                Successfully!
+                <div id="pdf-details" style="margin-top: 10px"></div>
+              </div>
             </div>
-        </header>
+          </section>
 
-        <main class="app-main">
-            <div class="container">
-                <!-- PDF Upload Section -->
-                <section class="pdf-upload">
-                    <h2><img width="96" height="96" src="https://img.icons8.com/fluency/96/pdf--v1.png" alt="pdf--v1" class="header-content-icon"/> Upload Knowledge in PDF</h2>
-                    <div class="upload-container">
-                        <label for="pdf-input" class="file-input">
-                            <!-- icon -->
-                            <i class="fa-solid fa-paperclip"></i>
-                            <span>Click to upload a file</span>
-                        </label>
-                        <input type="file" id="pdf-input" accept="application/pdf" hidden>
-                        
-                        <div id="file-info" class="file-info hidden">
-                            <span id="file-name" class="file-name"></span>
-                            <span id="file-size" class="file-size"></span>
-                            <span class="file-icon">
-                                <i class="fa-regular fa-circle-check"></i>
-                            </span>
-                        </div>
-                        
-                        <button id="upload-btn" class="upload-btn" disabled>
-                            <i class="fas fa-cloud-upload-alt icon"></i> Upload & Process
-                        </button>
+          <!-- Ask Question Section -->
+          <section class="ask-question">
+            <h2 class="component-header">
+              <img
+                width="64"
+                height="64"
+                src="https://img.icons8.com/cute-clipart/64/ask-question.png"
+                alt="ask-question"
+                class="header-content-icon"
+              />
+              Ask a Question
+            </h2>
+            <div class="question-input-container">
+              <p id="ask-info" class="info-message">
+                <i class="fas fa-info-circle icon"></i> Please upload a PDF
+                document first to start asking questions
+              </p>
 
-                        <div id="upload-error" class="error-message hidden"></div>
-                        <div id="upload-success" class="success-message hidden">
-                            <i class="fas fa-check-circle icon"></i> PDF Processed Successfully!
-                            <div id="pdf-details" style="margin-top: 10px;"></div>
-                        </div>
+                <!-- visible options -->
+                <div class="languageWrapper" id="languageWrapper">
+                    <!-- hidden options -->
+                    <select
+                    id="language-select"
+                    disabled
+                    hidden
+                    >
+                    <option value="English" selected>English</option>
+                    <option value="Hindi">Hindi (हिन्दी)</option>
+                    <option value="Marathi">Marathi (मराठी)</option>
+                    <option value="Gujarati">Gujarati (ગુજરાતી)</option>
+                    <option value="Tamil">Tamil (தமிழ்)</option>
+                    <option value="Telugu">Telugu (తెలుగు)</option>
+                    <option value="Kannada">Kannada (ಕನ್ನಡ)</option>
+                    <option value="Bengali">Bengali (বাংলা)</option>
+                    <option value="Punjabi">Punjabi (ਪੰਜਾਬੀ)</option>
+                    <option value="Malayalam">Malayalam (മലയാളം)</option>
+                    </select>
+                    <!-- option always visible -->
+                    <div class="language-select-trigger" tabindex="0" id="languageTrigger">
+                        <i class="fa-solid fa-language"></i>
+                        <span class="language-name" id="selectedLanguage">Response Language</span>
                     </div>
-                </section>
-
-                <!-- Ask Question Section -->
-                <section class="ask-question">
-                    <h2><i class="fas fa-comments icon"></i> Ask a Question</h2>
-                    <div class="question-input-container">
-                        <p id="ask-info" class="info-message">
-                            <i class="fas fa-info-circle icon"></i> Please upload a PDF document first to start asking questions
-                        </p>
-                        
-                        <div class="language-selector">
-                            <label for="language-select"><i class="fas fa-language"></i> Response Language:</label>
-                            <select id="language-select" class="language-select" disabled>
-                                <option value="English">English</option>
-                                <option value="Hindi">Hindi (हिन्दी)</option>
-                                <option value="Marathi">Marathi (मराठी)</option>
-                                <option value="Gujarati">Gujarati (ગુજરાતી)</option>
-                                <option value="Tamil">Tamil (தமிழ்)</option>
-                                <option value="Telugu">Telugu (తెలుగు)</option>
-                                <option value="Kannada">Kannada (ಕನ್ನಡ)</option>
-                                <option value="Bengali">Bengali (বাংলা)</option>
-                                <option value="Punjabi">Punjabi (ਪੰਜਾਬੀ)</option>
-                                <option value="Malayalam">Malayalam (മലയാളം)</option>
-                            </select>
+                    <!-- custom options -->
+                    <div class="language-custom-options" id="customOptions">
+                        <div class="language-custom-option" data-value="">
+                            <span class="language-name">Response Language</span>
                         </div>
 
-                        <textarea 
-                            id="question-input" 
-                            class="question-input" 
-                            placeholder="Ask a question about your PDF..."
-                            disabled
-                        ></textarea>
-
-                        <button id="ask-btn" class="ask-btn" disabled>
-                            <i class="fas fa-paper-plane icon"></i> Ask Question
-                        </button>
-
-                        <div id="ask-error" class="error-message hidden"></div>
-                    </div>
-
-                    <!-- Answer Display -->
-                    <div id="answer-container" class="answer-container hidden">
-                        <div class="answer-text" id="answer-text"></div>
-                        
-                        <div id="citations-section" class="citations-section hidden">
-                            <h3 style="margin-bottom: 15px; font-size: 18px;">Sources & Citations</h3>
-                            <div id="citations-list"></div>
+                        <div class="language-custom-option" data-value="English">
+                            <span class="language-name">English</span>
                         </div>
+                        <div class="language-custom-option" data-value="Hindi">
+                            <span class="language-name">Hindi (हिन्दी)</span>
+                        </div>
+                        <div class="language-custom-option" data-value="Marathi">
+                            <span class="language-name">Marathi (मराठी)</span>
+                        </div>
+                        <div class="language-custom-option" data-value="Gujarati">
+                            <span class="language-name">Gujarati (ગુજરાતી)</span>
+                        </div>
+                        <div class="language-custom-option" data-value="Tamil">
+                            <span class="language-name">Tamil (தமிழ்)</span>
+                        </div>
+                        <div class="language-custom-option" data-value="Telugu">
+                            <span class="language-name">Telugu (తెలుగు)</span>
+                        </div>
+                        <div class="language-custom-option" data-value="Kannada">
+                            <span class="language-name">Kannada (ಕನ್ನಡ)</span>
+                        </div>
+                        <div class="language-custom-option" data-value="Bengali">
+                            <span class="language-name">Bengali (বাংলা)</span>
+                        </div>
+                        <div class="language-custom-option" data-value="Punjabi">
+                            <span class="language-name">Punjabi (ਪੰਜਾਬੀ)</span>
+                        </div>
+                        <div class="language-custom-option" data-value="Malayalam">
+                            <span class="language-name">Malayalam (മലയാളം)</span>
+                        </div>
+
                     </div>
-                </section>
+                <!-- icon -->
+                <i class="fa-solid fa-caret-down wrapperIcon"></i>
+                </div>
+
+              <textarea
+                id="question-input"
+                class="question-input"
+                placeholder="Ask a question about your PDF..."
+                disabled
+              ></textarea>
+
+              <button id="ask-btn" class="ask-btn" disabled>
+                <i class="fas fa-paper-plane icon"></i> Ask Question
+              </button>
+
+              <div id="ask-error" class="error-message hidden"></div>
             </div>
-        </main>
 
-        <footer class="app-footer">
-            <p>Powered by <strong>Udayam AI Labs • RAG Demo</strong></p>
-        </footer>
+            <!-- Answer Display -->
+            <div id="answer-container" class="answer-container hidden">
+              <div class="answer-text" id="answer-text"></div>
+
+              <div id="citations-section" class="citations-section hidden">
+                <h3 style="margin-bottom: 15px; font-size: 18px">
+                  Sources & Citations
+                </h3>
+                <div id="citations-list"></div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <footer class="app-footer">
+        <p>
+          Powered by
+          <a target="_blank" href="https://udayam.co.in/">
+            <strong>Udayam AI Labs</strong>
+          </a>
+          • RAG Demo
+        </p>
+      </footer>
     </div>
 
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
