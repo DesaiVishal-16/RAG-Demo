@@ -317,8 +317,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const t = translations[lang] || translations["English"];
 
     document.querySelector(
-      ".ask-question h2"
-    ).innerHTML = `<i class="fas fa-comments icon"></i> ${t.askHeader}`;
+      ".ask-question .component-header"
+    ).innerHTML = `<img
+                width="64"
+                height="64"
+                src="https://img.icons8.com/cute-clipart/64/ask-question.png"
+                alt="ask-question"
+                class="header-content-icon"
+              /> ${t.askHeader}`;
     questionInput.placeholder = t.askPlaceholder;
     askBtn.innerHTML = `<i class="fas fa-paper-plane icon"></i> ${t.askBtn}`;
     document.querySelector("#citations-section h3").textContent =
