@@ -81,112 +81,127 @@
 
           <!-- Ask Question Section -->
           <section class="ask-question">
-            <h2 class="component-header">
-              <img
-                width="64"
-                height="64"
-                src="https://img.icons8.com/cute-clipart/64/ask-question.png"
-                alt="ask-question"
-                class="ask-question-header-icon"
-              />
-              Ask a Question
-            </h2>
+            <!-- header -->
+            <div class="ask-question-header">
+              <!-- header -->
+              <h2 class="component-header">
+                <img
+                  width="64"
+                  height="64"
+                  src="https://img.icons8.com/cute-clipart/64/ask-question.png"
+                  alt="ask-question"
+                  class="ask-question-header-icon"
+                />
+                Ask a Question
+              </h2>
+              <!-- visible options -->
+              <div class="languageWrapper" id="languageWrapper">
+                  <!-- hidden options -->
+                  <select
+                  id="language-select"
+                  disabled
+                  hidden
+                  >
+                  <option value="English" selected>English</option>
+                  <option value="Hindi">Hindi (हिन्दी)</option>
+                  <option value="Marathi">Marathi (मराठी)</option>
+                  <option value="Gujarati">Gujarati (ગુજરાતી)</option>
+                  <option value="Tamil">Tamil (தமிழ்)</option>
+                  <option value="Telugu">Telugu (తెలుగు)</option>
+                  <option value="Kannada">Kannada (ಕನ್ನಡ)</option>
+                  <option value="Bengali">Bengali (বাংলা)</option>
+                  <option value="Punjabi">Punjabi (ਪੰਜਾਬੀ)</option>
+                  <option value="Malayalam">Malayalam (മലയാളം)</option>
+                  </select>
+                  <!-- option always visible -->
+                  <div class="language-select-trigger" tabindex="0" id="languageTrigger">
+                      <i class="fa-solid fa-language"></i>
+                      <span class="language-name" id="selectedLanguage">Response Language</span>
+                  </div>
+                  <!-- custom options -->
+                  <div class="language-custom-options" id="customOptions">
+                      <div class="language-custom-option" data-value="">
+                          <span class="language-name">Response Language</span>
+                      </div>
+
+                      <div class="language-custom-option" data-value="English">
+                          <span class="language-name">English</span>
+                      </div>
+                      <div class="language-custom-option" data-value="Hindi">
+                          <span class="language-name">Hindi (हिन्दी)</span>
+                      </div>
+                      <div class="language-custom-option" data-value="Marathi">
+                          <span class="language-name">Marathi (मराठी)</span>
+                      </div>
+                      <div class="language-custom-option" data-value="Gujarati">
+                          <span class="language-name">Gujarati (ગુજરાતી)</span>
+                      </div>
+                      <div class="language-custom-option" data-value="Tamil">
+                          <span class="language-name">Tamil (தமிழ்)</span>
+                      </div>
+                      <div class="language-custom-option" data-value="Telugu">
+                          <span class="language-name">Telugu (తెలుగు)</span>
+                      </div>
+                      <div class="language-custom-option" data-value="Kannada">
+                          <span class="language-name">Kannada (ಕನ್ನಡ)</span>
+                      </div>
+                      <div class="language-custom-option" data-value="Bengali">
+                          <span class="language-name">Bengali (বাংলা)</span>
+                      </div>
+                      <div class="language-custom-option" data-value="Punjabi">
+                          <span class="language-name">Punjabi (ਪੰਜਾਬੀ)</span>
+                      </div>
+                      <div class="language-custom-option" data-value="Malayalam">
+                          <span class="language-name">Malayalam (മലയാളം)</span>
+                      </div>
+
+                  </div>
+              <!-- icon -->
+              <i class="fa-solid fa-caret-down wrapperIcon"></i>
+              </div>
+            </div>
             <div class="question-input-container">
               <p id="ask-info" class="info-message">
                 <i class="fas fa-info-circle icon"></i> Please upload a PDF
                 document first to start asking questions
               </p>
-
-                <!-- visible options -->
-                <div class="languageWrapper" id="languageWrapper">
-                    <!-- hidden options -->
-                    <select
-                    id="language-select"
-                    disabled
-                    hidden
-                    >
-                    <option value="English" selected>English</option>
-                    <option value="Hindi">Hindi (हिन्दी)</option>
-                    <option value="Marathi">Marathi (मराठी)</option>
-                    <option value="Gujarati">Gujarati (ગુજરાતી)</option>
-                    <option value="Tamil">Tamil (தமிழ்)</option>
-                    <option value="Telugu">Telugu (తెలుగు)</option>
-                    <option value="Kannada">Kannada (ಕನ್ನಡ)</option>
-                    <option value="Bengali">Bengali (বাংলা)</option>
-                    <option value="Punjabi">Punjabi (ਪੰਜਾਬੀ)</option>
-                    <option value="Malayalam">Malayalam (മലയാളം)</option>
-                    </select>
-                    <!-- option always visible -->
-                    <div class="language-select-trigger" tabindex="0" id="languageTrigger">
-                        <i class="fa-solid fa-language"></i>
-                        <span class="language-name" id="selectedLanguage">Response Language</span>
-                    </div>
-                    <!-- custom options -->
-                    <div class="language-custom-options" id="customOptions">
-                        <div class="language-custom-option" data-value="">
-                            <span class="language-name">Response Language</span>
-                        </div>
-
-                        <div class="language-custom-option" data-value="English">
-                            <span class="language-name">English</span>
-                        </div>
-                        <div class="language-custom-option" data-value="Hindi">
-                            <span class="language-name">Hindi (हिन्दी)</span>
-                        </div>
-                        <div class="language-custom-option" data-value="Marathi">
-                            <span class="language-name">Marathi (मराठी)</span>
-                        </div>
-                        <div class="language-custom-option" data-value="Gujarati">
-                            <span class="language-name">Gujarati (ગુજરાતી)</span>
-                        </div>
-                        <div class="language-custom-option" data-value="Tamil">
-                            <span class="language-name">Tamil (தமிழ்)</span>
-                        </div>
-                        <div class="language-custom-option" data-value="Telugu">
-                            <span class="language-name">Telugu (తెలుగు)</span>
-                        </div>
-                        <div class="language-custom-option" data-value="Kannada">
-                            <span class="language-name">Kannada (ಕನ್ನಡ)</span>
-                        </div>
-                        <div class="language-custom-option" data-value="Bengali">
-                            <span class="language-name">Bengali (বাংলা)</span>
-                        </div>
-                        <div class="language-custom-option" data-value="Punjabi">
-                            <span class="language-name">Punjabi (ਪੰਜਾਬੀ)</span>
-                        </div>
-                        <div class="language-custom-option" data-value="Malayalam">
-                            <span class="language-name">Malayalam (മലയാളം)</span>
-                        </div>
-
-                    </div>
-                <!-- icon -->
-                <i class="fa-solid fa-caret-down wrapperIcon"></i>
-                </div>
-
-              <textarea
-                id="question-input"
-                class="question-input"
-                placeholder="Ask a question about your PDF..."
-                disabled
-              ></textarea>
-
-              <button id="ask-btn" class="ask-btn" disabled>
-                <i class="fas fa-paper-plane icon"></i> Ask Question
-              </button>
-
+                <textarea id="question-input"
+                  class="question-input"
+                  placeholder="Ask a question about your PDF..." disabled>
+                </textarea>
+                <button id="ask-btn" class="ask-btn" disabled>
+                  <i class="fas fa-paper-plane icon"></i> Ask a Question
+                </button>
+        
               <div id="ask-error" class="error-message hidden"></div>
-            </div>
 
+            </div>
             <!-- Answer Display -->
             <div id="answer-container" class="answer-container hidden">
-              <div class="answer-text" id="answer-text"></div>
-
-              <div id="citations-section" class="citations-section hidden">
-                <h3 style="margin-bottom: 15px; font-size: 18px">
-                  Sources & Citations
-                </h3>
-                <div id="citations-list"></div>
-              </div>
+              <!-- little robot-->
+                <img
+                  width="100"
+                  height="100"
+                  src="https://img.icons8.com/ios-filled/100/FFFFFF/ai-robot--v7.png"
+                  alt="ai-robot--v7"
+                  class="answer-container-icon"
+                />
+                <div class="answer-text" id="answer-text" hidden>
+                </div>
+                <div id="citations-section" class="citations-section" hidden>
+                  <h3 class="citations-section-title">
+                    Sources & Citations
+                  </h3>
+                  <div id="citations-list">
+                    <div class="citation-item">
+                      <div class="citation-header">
+                          <span class="citation-badge">${sourceLabel} ${c.index}</span>
+                          <span class="citation-page">${pageLabel} ${c.pageNumber}</span>
+                      </div>
+                      <div class="citation-text">"${c.text}"</div>
+                    </div>
+                  </div>
+                </div>
             </div>
           </section>
         </div>

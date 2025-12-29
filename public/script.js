@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const citationsSection = document.getElementById("citations-section");
   const citationsList = document.getElementById("citations-list");
   const languageSelect = document.getElementById("language-select");
-  languageSelect.disabled = false;
+  /*languageSelect.disabled = true;*/
 
   // ===== NUEVAS VARIABLES PARA EL SELECT PERSONALIZADO =====
   const languageWrapper = document.getElementById("languageWrapper");
@@ -32,9 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===== FUNCIONALIDAD DEL SELECT PERSONALIZADO =====
     // 1. Toggle del dropdown (abrir/cerrar al hacer click)
     languageTrigger.addEventListener("click", (e) => {
-        e.stopPropagation(); // Evita que el click se propague al documento
-        isDropdownOpen = !isDropdownOpen; // Cambia el estado abierto/cerrado
-        languageWrapper.classList.toggle("open", isDropdownOpen); // Añade/quita la clase 'open'
+      e.stopPropagation(); // Evita que el click se propague al documento
+      isDropdownOpen = !isDropdownOpen; // Cambia el estado abierto/cerrado
+      languageWrapper.classList.toggle("open", isDropdownOpen); // Añade/quita la clase 'open'
     });
     // 2. Cerrar dropdown al hacer click fuera de él
     document.addEventListener("click", (e) => {
@@ -316,15 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const lang = languageSelect.value;
     const t = translations[lang] || translations["English"];
 
-    document.querySelector(
-      ".ask-question .component-header"
-    ).innerHTML = `<img
-                width="64"
-                height="64"
-                src="https://img.icons8.com/cute-clipart/64/ask-question.png"
-                alt="ask-question"
-                class="header-content-icon"
-              /> ${t.askHeader}`;
+    document.querySelector(".ask-question .ask-question-header .component-header").innerHTML = `<img width="64" height="64" src="https://img.icons8.com/cute-clipart/64/ask-question.png" alt="ask-question" class="ask-question-header-icon"/> ${t.askHeader}`;
     questionInput.placeholder = t.askPlaceholder;
     askBtn.innerHTML = `<i class="fas fa-paper-plane icon"></i> ${t.askBtn}`;
     document.querySelector("#citations-section h3").textContent =
