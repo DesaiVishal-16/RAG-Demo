@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setLoading(
         askBtn,
         false,
-        "Ask Question",
+        "Ask a Question",
         '<i class="fas fa-paper-plane icon"></i>'
       );
     }
