@@ -6,7 +6,6 @@ import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
 import dotenv from 'dotenv';
 
-// Import Assistants module
 import { 
   initializeAssistants, 
   setupAssistant, 
@@ -14,23 +13,19 @@ import {
   getStatus,
   isReady,
   cleanup
-} from './openai/assistants.js';
+} from './huggingface/litellm.js';
 
-// Load environment variables
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Initialize Express app
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Configure multer for file upload
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
     const uploadDir = path.join(__dirname, 'uploads');
@@ -46,7 +41,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB limit
+    fileSize: 10 * 1024 * 1024
   },
   fileFilter: (req, file, cb) => {
     if (file.mimetype === 'application/pdf') {
@@ -57,57 +52,21 @@ const upload = multer({
   }
 });
 
-// Initialize OpenAI API
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const HUGGING_FACE_API_KEY = process.env.HUGGING_FACE_API_KEY;
+const HF_MODEL = process.env.HF_MODEL || 'moonshotai/Kimi-K2-Thinking-hugging';
 
-if (!OPENAI_API_KEY) {
-  console.error('ERROR: OPENAI_API_KEY not found in environment variables');
-  console.error('Please create a .env file with your OpenAI API key');
+if (!HUGGING_FACE_API_KEY) {
+  console.error('ERROR: HUGGING_FACE_API_KEY not found in environment variables');
+  console.error('Please create a .env file with your Hugging Face API key');
   process.exit(1);
 }
 
-initializeAssistants(OPENAI_API_KEY);
-console.log('✓ OpenAI Assistants API initialized');
+initializeAssistants(HUGGING_FACE_API_KEY, HF_MODEL);
+console.log('✓ Hugging Face LiteLLM initialized');
+console.log('✓ Model:', HF_MODEL);
 
-// Basic Authentication Middleware
-const basicAuth = (req, res, next) => {
-  // Skip authentication for API endpoints
-  const publicPaths = ['/health', '/upload-pdf', '/ask', '/current-pdf'];
-  if (publicPaths.includes(req.path)) {
-    return next();
-  }
-
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader) {
-    res.setHeader('WWW-Authenticate', 'Basic realm="Secure Area"');
-    return res.status(401).send('Authentication required');
-  }
-
-  const auth = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
-  const user = auth[0];
-  const pass = auth[1];
-
-  const envUser = process.env.ADMIN_USERNAME || 'admin';
-  const envPass = process.env.ADMIN_PASSWORD || 'admin4321';
-
-  if (user === envUser && pass === envPass) {
-    next();
-  } else {
-    res.setHeader('WWW-Authenticate', 'Basic realm="Secure Area"');
-    return res.status(401).send('Authentication required');
-  }
-};
-
-// Apply Basic Auth to all routes
-app.use(basicAuth);
-
-// Store current PDF info
 let currentPDFInfo = null;
 
-/**
- * Health check endpoint
- */
 app.get('/health', (req, res) => {
   const status = getStatus();
   res.json({
@@ -118,10 +77,6 @@ app.get('/health', (req, res) => {
   });
 });
 
-/**
- * POST /upload-pdf
- * Upload and process a PDF file
- */
 app.post('/upload-pdf', upload.single('pdf'), async (req, res) => {
   try {
     if (!req.file) {
@@ -131,30 +86,23 @@ app.post('/upload-pdf', upload.single('pdf'), async (req, res) => {
     console.log(`\n[Upload] Processing PDF: ${req.file.originalname}`);
     const filePath = req.file.path;
 
-    // Cleanup previous assistant if exists
     if (currentPDFInfo) {
-      console.log('[Upload] Cleaning up previous assistant...');
+      console.log('[Upload] Cleaning up previous document...');
       await cleanup();
     }
 
-    // Setup Assistant with the file - THIS IS THE FIX!
-    console.log('[Upload] Setting up OpenAI Assistant...');
+    console.log('[Upload] Setting up document with LiteLLM...');
     const result = await setupAssistant(filePath);
-    console.log(`[Upload] Assistant ready:`, result);
+    console.log('[Upload] Document ready:', result);
 
-    // Store PDF info with all the details
     currentPDFInfo = {
-      filename: req.file.originalname,
+      filename: result.filename,
       uploadDate: new Date().toISOString(),
-      assistantId: result.assistantId,
-      vectorStoreId: result.vectorStoreId,
-      threadId: result.threadId,
-      fileId: result.fileId
+      numPages: result.numPages,
+      numChunks: result.numChunks
     };
 
-    // Clean up uploaded file
-    await fs.unlink(filePath);
-    console.log('[Upload] Cleanup complete\n');
+    console.log('[Upload] Setup complete\n');
 
     res.json({
       success: true,
@@ -162,9 +110,8 @@ app.post('/upload-pdf', upload.single('pdf'), async (req, res) => {
       info: {
         filename: currentPDFInfo.filename,
         uploadDate: currentPDFInfo.uploadDate,
-        numPages: 'N/A (Managed by OpenAI)',
-        numChunks: 'N/A (Managed by OpenAI)',
-        assistantId: result.assistantId
+        numPages: result.numPages,
+        numChunks: result.numChunks
       }
     });
 
@@ -178,10 +125,6 @@ app.post('/upload-pdf', upload.single('pdf'), async (req, res) => {
   }
 });
 
-/**
- * POST /ask
- * Ask a question about the uploaded PDF
- */
 app.post('/ask', async (req, res) => {
   try {
     const { question, language } = req.body;
@@ -194,7 +137,6 @@ app.post('/ask', async (req, res) => {
       return res.status(400).json({ error: 'Question is required' });
     }
 
-    // Check if system is ready
     const status = getStatus();
     console.log('[Ask] Current status:', status);
 
@@ -207,7 +149,6 @@ app.post('/ask', async (req, res) => {
 
     console.log(`[Ask] Processing question: "${question}" in ${language || 'English'}`);
 
-    // Query the Assistant
     const result = await askAssistant(question, language);
 
     console.log('[Ask] Response received');
@@ -220,17 +161,16 @@ app.post('/ask', async (req, res) => {
       answer: result.answer,
       citations: result.citations.map((c, i) => ({
         index: c.index,
-        chunkId: `source_${c.index}`,
-        pageNumber: c.pageNumber || 'Ref',
-        text: c.quote,
-        fileId: c.fileId
+        chunkId: c.fileId,
+        pageNumber: c.pageNumber,
+        text: c.quote
       })),
       retrievedChunks: result.citations.map((c, i) => ({
         id: `chunk_${i + 1}`,
         text: c.quote,
         metadata: {
-          source: 'OpenAI Vector Store',
-          fileId: c.fileId
+          source: 'Hugging Face LiteLLM RAG',
+          chunkId: c.fileId
         }
       }))
     });
@@ -248,10 +188,6 @@ app.post('/ask', async (req, res) => {
   }
 });
 
-/**
- * GET /current-pdf
- * Get information about the currently loaded PDF
- */
 app.get('/current-pdf', (req, res) => {
   if (!currentPDFInfo) {
     return res.status(404).json({
@@ -266,10 +202,6 @@ app.get('/current-pdf', (req, res) => {
   });
 });
 
-/**
- * POST /cleanup
- * Cleanup current assistant and PDF
- */
 app.post('/cleanup', async (req, res) => {
   try {
     await cleanup();
@@ -287,10 +219,6 @@ app.post('/cleanup', async (req, res) => {
   }
 });
 
-/**
- * GET /status
- * Get detailed system status
- */
 app.get('/status', (req, res) => {
   res.json({
     success: true,
@@ -300,16 +228,12 @@ app.get('/status', (req, res) => {
   });
 });
 
-// Serve static files from the public directory
 app.use(express.static(path.join(__dirname, '../public')));
 
-// The "catchall" handler: for any request that doesn't
-// match one above, send back index.html file.
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-// Error handling middleware
 app.use((error, req, res, next) => {
   console.error('Server Error:', error);
   res.status(500).json({
@@ -319,12 +243,12 @@ app.use((error, req, res, next) => {
   });
 });
 
-// Start server
 app.listen(PORT, () => {
   console.log('\n' + '='.repeat(50));
   console.log('🚀 RAG Demo Server Started');
   console.log('='.repeat(50));
   console.log(`📡 Server running on: http://localhost:${PORT}`);
+  console.log(`🤖 Model: ${HF_MODEL}`);
   console.log(`📄 API Endpoints:`);
   console.log(`   - GET  /health       - Health check`);
   console.log(`   - POST /upload-pdf   - Upload PDF`);
