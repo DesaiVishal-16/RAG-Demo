@@ -111,12 +111,93 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+<<<<<<< HEAD
       selectedFile = file;
       fileName.textContent = file.name;
       fileSize.textContent = `(${(file.size / 1024 / 1024).toFixed(2)} MB)`;
       fileInfo.classList.remove("hidden");
       uploadError.classList.add("hidden");
       uploadBtn.disabled = false;
+=======
+        const formData = new FormData();
+        formData.append('pdf', selectedFile);
+
+        try {
+            const response = await fetch('/upload-pdf', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) throw new Error(data.error || 'Upload failed');
+
+            // Success
+            isPdfUploaded = true;
+            showPdfDetails(data.info);
+            enableQuestionInput();
+            
+            // Reset file input
+            selectedFile = null;
+            pdfInput.value = '';
+            fileInfo.classList.add('hidden');
+            uploadBtn.disabled = true;
+
+        } catch (err) {
+            showError(uploadError, err.message);
+        } finally {
+            setLoading(uploadBtn, false, 'Upload & Process', '<i class="fas fa-cloud-upload-alt icon"></i>');
+        }
+    });
+
+    // Question Handler
+    askBtn.addEventListener('click', handleAsk);
+    questionInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleAsk();
+        }
+    });
+
+    questionInput.addEventListener('input', () => {
+        askBtn.disabled = !questionInput.value.trim() || !isPdfUploaded;
+    });
+
+    async function handleAsk() {
+        const question = questionInput.value.trim();
+        if (!question || !isPdfUploaded) return;
+
+        setLoading(askBtn, true, 'Thinking...');
+        askError.classList.add('hidden');
+        
+        try {
+            const response = await fetch('/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    question,
+                    language: languageSelect.value 
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to get answer');
+            }
+
+            displayAnswer(data);
+            questionInput.value = '';
+            askBtn.disabled = true;
+
+        } catch (err) {
+            showError(askError, err.message);
+        } finally {
+            setLoading(askBtn, false, 'Ask Question', '<i class="fas fa-paper-plane icon"></i>');
+        }
+>>>>>>> 4a0231f (Update: Change form open ai to open ai sdk)
     }
   });
 
