@@ -52,14 +52,8 @@ const upload = multer({
   }
 });
 
-const HUGGING_FACE_API_KEY = process.env.HUGGING_FACE_API_KEY;
+const HUGGING_FACE_API_KEY = process.env.HUGGING_FACE_API_KEY || 'demo-key';
 const HF_MODEL = process.env.HF_MODEL || 'moonshotai/Kimi-K2-Thinking-hugging';
-
-if (!HUGGING_FACE_API_KEY) {
-  console.error('ERROR: HUGGING_FACE_API_KEY not found in environment variables');
-  console.error('Please create a .env file with your Hugging Face API key');
-  process.exit(1);
-}
 
 initializeAssistants(HUGGING_FACE_API_KEY, HF_MODEL);
 console.log('✓ Hugging Face LiteLLM initialized');

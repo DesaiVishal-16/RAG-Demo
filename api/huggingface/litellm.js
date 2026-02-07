@@ -14,10 +14,7 @@ let documentInfo = null;
  * @param {string} model - Model name (default: moonshotai/Kimi-K2-Thinking-hugging)
  */
 export function initializeAssistants(apiKey, model = 'moonshotai/Kimi-K2-Thinking-hugging') {
-  if (!apiKey) {
-    throw new Error('Hugging Face API key is required');
-  }
-
+  apiKey = apiKey || 'demo-key';
   currentApiKey = apiKey;
   currentModel = model;
 
