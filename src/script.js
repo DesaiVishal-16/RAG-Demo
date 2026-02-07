@@ -1,14 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-  const config = window.APP_CONFIG || {};
-  const HF_API_KEY = config.HF_API_KEY || '';
-  const HF_MODEL = config.HF_MODEL || 'moonshotai/Kimi-K2-Thinking-hugging';
-  const CHUNK_SIZE = config.CHUNK_SIZE || 1000;
-  const CHUNK_OVERLAP = config.CHUNK_OVERLAP || 200;
-  const TOP_K_CHUNKS = config.TOP_K_CHUNKS || 4;
-  const MAX_TOKENS = config.MAX_TOKENS || 2000;
-  const TEMPERATURE = config.TEMPERATURE || 0.3;
+  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
+  const GEMINI_MODEL = import.meta.env.VITE_GEMINI_MODEL || 'gemini-1.5-pro';
+  const CHUNK_SIZE = Number(import.meta.env.VITE_CHUNK_SIZE) || 1000;
+  const CHUNK_OVERLAP = Number(import.meta.env.VITE_CHUNK_OVERLAP) || 200;
+  const TOP_K_CHUNKS = Number(import.meta.env.VITE_TOP_K_CHUNKS) || 4;
+  const MAX_TOKENS = Number(import.meta.env.VITE_MAX_TOKENS) || 2000;
+  const TEMPERATURE = Number(import.meta.env.VITE_TEMPERATURE) || 0.3;
 
   const pdfInput = document.getElementById('pdf-input');
   const fileInfo = document.getElementById('file-info');
@@ -32,8 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const languageWrapper = document.getElementById('languageWrapper');
   const languageTrigger = document.getElementById('languageTrigger');
   const selectedLanguage = document.getElementById('selectedLanguage');
-  const customOptions = document.getElementById('customOptions');
-  const languageIcon = document.getElementById('languageIcon');
 
   let isDropdownOpen = false;
   let selectedFile = null;
@@ -72,21 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  languageTrigger.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      isDropdownOpen = !isDropdownOpen;
-      languageWrapper.classList.toggle('open', isDropdownOpen);
-    }
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isDropdownOpen) {
-      isDropdownOpen = false;
-      languageWrapper.classList.remove('open');
-    }
-  });
-
   pdfInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -109,36 +89,48 @@ document.addEventListener('DOMContentLoaded', () => {
   uploadBtn.addEventListener('click', async () => {
     if (!selectedFile) return;
 
-    if (!HF_API_KEY) {
-      const inputKey = prompt('Please enter your Hugging Face API key:');
-      if (!inputKey) {
-        showError(uploadError, 'API key is required');
-        return;
-      }
-      localStorage.setItem('hf_api_key', inputKey);
-    }
-
     setLoading(uploadBtn, true, 'Processing...');
     uploadError.classList.add('hidden');
     uploadSuccess.classList.add('hidden');
 
     try {
       const arrayBuffer = await selectedFile.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const base64Pdf = arrayBufferToBase64(arrayBuffer);
+
+      const apiKey = GEMINI_API_KEY;
       
-      let fullText = '';
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items.map(item => item.str).join(' ');
-        fullText += pageText + '\n\n';
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: 'Process this PDF document. Extract and summarize the key information. Just respond with "PDF processed successfully" if you can read it.' }
+            ],
+            inlineData: {
+              mimeType: 'application/pdf',
+              data: base64Pdf
+            }
+          }],
+          generationConfig: {
+            maxOutputTokens: 100,
+            temperature: 0.1
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || 'Failed to process PDF');
       }
 
-      documentChunks = createChunks(fullText, CHUNK_SIZE, CHUNK_OVERLAP);
+      documentChunks = await extractTextFromPdf(base64Pdf);
       
       documentInfo = {
         filename: selectedFile.name,
-        numPages: pdf.numPages,
+        numPages: 0,
         numChunks: documentChunks.length
       };
 
@@ -157,6 +149,51 @@ document.addEventListener('DOMContentLoaded', () => {
       setLoading(uploadBtn, false, 'Upload & Process', '<i class="fas fa-cloud-upload-alt icon"></i>');
     }
   });
+
+  async function extractTextFromPdf(base64Pdf) {
+    const apiKey = GEMINI_API_KEY;
+    
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { text: 'Extract ALL text from this PDF document. Return the complete text content, preserving paragraphs and structure. Do not summarize - return everything.' }
+          ],
+          inlineData: {
+            mimeType: 'application/pdf',
+            data: base64Pdf
+          }
+        }],
+        generationConfig: {
+          maxOutputTokens: 32768,
+          temperature: 0.1
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to extract text from PDF');
+    }
+
+    const result = await response.json();
+    const fullText = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    
+    return createChunks(fullText, CHUNK_SIZE, CHUNK_OVERLAP);
+  }
+
+  function arrayBufferToBase64(buffer) {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  }
 
   function createChunks(text, chunkSize = 1000, overlap = 200) {
     const chunks = [];
@@ -244,7 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
     askError.classList.add('hidden');
 
     try {
-      const relevantChunks = findRelevantChunks(question, 4);
+      const relevantChunks = findRelevantChunks(question, TOP_K_CHUNKS);
       
       const context = relevantChunks.map((chunk, i) => 
         `[${i + 1}] ${chunk.text}`
@@ -270,35 +307,34 @@ ${context}
 
 Question: ${question}`;
 
-      const apiKey = localStorage.getItem('hf_api_key') || HF_API_KEY;
+      const apiKey = GEMINI_API_KEY;
       
-      const response = await fetch(`https://api-inference.huggingface.co/models/${HF_MODEL}`, {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          inputs: systemPrompt,
-          parameters: {
+          contents: [{
+            parts: [{ text: systemPrompt }]
+          }],
+          generationConfig: {
             temperature: TEMPERATURE,
-            max_new_tokens: MAX_TOKENS
+            maxOutputTokens: MAX_TOKENS
           }
         })
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        if (errorData.error && errorData.error.includes('Rate limit')) {
-          throw new Error('Rate limit reached. Please wait a few seconds and try again.');
+        if (errorData.error?.message?.includes('API key')) {
+          throw new Error('Invalid API key. Please check your Gemini API key.');
         }
-        throw new Error(errorData.error || 'API request failed');
+        throw new Error(errorData.error?.message || 'API request failed');
       }
 
       const result = await response.json();
-      let answer = Array.isArray(result) ? result[0].generated_text : result.generated_text;
-      
-      answer = answer.replace(systemPrompt, '').trim();
+      const answer = result.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received';
 
       const citations = relevantChunks.map((chunk, i) => ({
         index: i + 1,
@@ -334,7 +370,7 @@ Question: ${question}`;
     uploadSuccess.classList.remove('hidden');
     pdfDetails.innerHTML = `
       <div class="detail-item"><strong>Filename:</strong> ${info.filename}</div>
-      <div class="detail-item"><strong>Pages:</strong> ${info.numPages}</div>
+      <div class="detail-item"><strong>Chunks:</strong> ${info.numChunks}</div>
       <div class="detail-item"><strong>Status:</strong> Ready</div>
     `;
   }
@@ -366,7 +402,7 @@ Question: ${question}`;
     },
     Gujarati: {
       askHeader: 'પ્રશ્ન પૂછો',
-      askPlaceholder: 'તમારા પીડीએફ વિશે પ્રશ્ન પૂછો...',
+      askPlaceholder: 'તમારા પીડીએફ વિશે પ્રશ્ન પૂછો...',
       askBtn: 'પ્રશ્ન પૂછો',
       sourcesHeader: 'સ્ત્રોતો અને અવતરણો',
     },
