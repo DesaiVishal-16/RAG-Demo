@@ -1,7 +1,0 @@
-node_modules
-.env
-uploads/
-*.pdf
-.DS_Store
-dist
-*.log
